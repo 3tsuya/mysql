@@ -4,14 +4,13 @@ SELECT flight.flightno,
 FROM flight
 JOIN airline
     ON flight.airline_id = airline.airline_id
-WHERE flight.`from` = (
-    SELECT airport_id
-    FROM airport
-    WHERE iata = 'JFK'
-);
+JOIN airport
+    ON flight.`from` = airport.airport_id 
+    WHERE airport.iata = 'JFK';
 
 //第３問
-SELECT flight.flightno, 
+SELECT DISTINCT
+       flight.flightno, 
        departure.name AS departure_airport,
        arrival.name AS arrival_airport
 FROM flight
@@ -35,7 +34,7 @@ SELECT airline.airlinename,
 FROM airline
 JOIN flight
     ON airline.airline_id = flight.airline_id
-GROUP BY airline.airlinename
+GROUP BY airline.airline_id
 HAVING COUNT(flight.flightno) > 50;
 
 //第６問
@@ -75,22 +74,25 @@ HAVING AVG(booking.price) > 250.00;
 //第９問
 SELECT DISTINCT airline.airlinename
 FROM airline
-JOIN flight
-    ON airline.airline_id = flight.airline_id
-JOIN airport_geo
-    ON flight.`from` = airport_geo.airport_id
-WHERE airport_geo.country = 'Japan';
+WHERE airline.airline_id IN (
+    SELECT flight.airline_id
+    FROM flight
+    JOIN airport_geo
+        ON flight.`from` = airport_geo.airport_id
+    WHERE airport_geo.country = 'Japan'
+);
 
 //第１０問
 SELECT airport_geo.name,
-    COUNT(DISTINCT departure.flight_id) AS departure_count,
-    COUNT(DISTINCT arrival.flight_id) AS arrival_count
-FROM airport_geo
-LEFT JOIN flight AS departure
-    ON airport_geo.airport_id = departure.`from`
-LEFT JOIN flight AS arrival
-    ON airport_geo.airport_id = arrival.`to`
-GROUP BY airport_geo.airport_id, airport_geo.name;
+    (SELECT COUNT(*)
+     FROM flight
+     WHERE flight.`from` = airport_geo.airport_id
+    ) AS departure_count,
+    (SELECT COUNT(*)
+     FROM flight
+     WHERE flight.`to` = airport_geo.airport_id
+    ) AS arrival_count
+FROM airport_geo;       
 
 //第１１問
 SELECT airline.airlinename,
