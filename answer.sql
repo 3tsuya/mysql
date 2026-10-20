@@ -26,7 +26,7 @@ SELECT passenger.passenger_id,
 From passenger
 LEFT JOIN  booking
     ON passenger.passenger_id = booking.passenger_id
-WHERE booking.passenger_id IS NULL;
+WHERE passenger.passenger_id IS NULL;
 
 //第5問
 SELECT airline.airlinename, 
